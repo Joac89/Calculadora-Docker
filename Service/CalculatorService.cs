@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 public class CalculatorService
 {
-    public ResponseBase<decimal> Execution { get; set; }
+    public ResponseBase<double> Execution { get; set; }
 
     public CalculatorService()
     {
-        Execution = new ResponseBase<decimal>()
+        Execution = new ResponseBase<double>()
         {
             Code = 200
         };
     }
 
-    public ResponseBase<decimal> Addition(string numbers)
+    public ResponseBase<double> Addition(string numbers)
     {
-        var result = new ResponseBase<decimal>();
+        var result = new ResponseBase<double>();
         var sum = Calculate(numbers, Operations.ADD);
 
         result.Code = Execution.Code;
@@ -24,9 +24,9 @@ public class CalculatorService
 
         return result;
     }
-    public ResponseBase<decimal> Substraction(string numbers)
+    public ResponseBase<double> Substraction(string numbers)
     {
-        var result = new ResponseBase<decimal>();
+        var result = new ResponseBase<double>();
         var subs = Calculate(numbers, Operations.SUBS);
 
         result.Code = Execution.Code;
@@ -35,9 +35,9 @@ public class CalculatorService
 
         return result;
     }
-    public ResponseBase<decimal> Multiplication(string numbers)
+    public ResponseBase<double> Multiplication(string numbers)
     {
-        var result = new ResponseBase<decimal>();
+        var result = new ResponseBase<double>();
         var mult = Calculate(numbers, Operations.MULT);
 
         result.Code = Execution.Code;
@@ -47,9 +47,9 @@ public class CalculatorService
         return result;
     }
 
-    public ResponseBase<decimal> Division(string numbers)
+    public ResponseBase<double> Division(string numbers)
     {
-        var result = new ResponseBase<decimal>();
+        var result = new ResponseBase<double>();
         var div = Calculate(numbers, Operations.DIV);
 
         result.Code = Execution.Code;
@@ -66,14 +66,14 @@ public class CalculatorService
         MULT = 3,
         DIV = 4
     }
-    private decimal Calculate(string nums, Operations operation)
+    private double Calculate(string nums, Operations operation)
     {
-        var value = 0M;
-        var numbers = new List<decimal>();
+        var value = 0D;
+        var numbers = new List<double>();
 
-        if (!string.IsNullOrWhiteSpace(nums))
+        numbers = Transform(nums);
+        if (Execution.Code == 200)
         {
-            numbers = Transform(nums);
             switch (operation)
             {
                 case Operations.ADD:
@@ -83,12 +83,13 @@ public class CalculatorService
                     }
                 case Operations.SUBS:
                     {
-                        foreach (var i in numbers) value = value - i;
+                        value = numbers[0];
+                        for (var i = 1; i < numbers.Count; ++i) value = value - numbers[i];
                         break;
                     }
                 case Operations.MULT:
-                    value = 1;
                     {
+                        value = 1;
                         foreach (var i in numbers) value = value * i;
                         break;
                     }
@@ -102,32 +103,58 @@ public class CalculatorService
         }
         else
         {
-            Execution.Code = 404;
-            Execution.Message = "Parameters is empty";
+            value = 0;
         }
 
         return value;
     }
 
-    private List<decimal> Transform(string numbers)
+    private List<double> Transform(string numbers)
     {
-        var splitter = numbers.Split('/');
-        var result = new List<decimal>();
+        var result = new List<double>();
 
-        for (var i = 0; i < splitter.Length; ++i)
+        if (!string.IsNullOrWhiteSpace(numbers))
         {
-            var isEmpty = string.IsNullOrWhiteSpace(splitter[i].ToString());
-            var isNumber = decimal.TryParse(splitter[i], out decimal n);
+            var splitter = numbers.Split('/');
 
-            if (!isEmpty && isNumber) result.Add(Convert.ToDecimal(splitter[i]));
+            if (splitter.Length > 0)
+            {
+                for (var i = 0; i < splitter.Length; ++i)
+                {
+                    var isEmpty = string.IsNullOrWhiteSpace(splitter[i].ToString());
+                    var isNumber = float.TryParse(splitter[i], out float n);
+
+                    if (!isEmpty && isNumber)
+                    {
+                        result.Add(Convert.ToDouble(splitter[i]));
+                    }
+                    else
+                    {
+                        Execution.Code = 500;
+                        Execution.Message = "Invalid parameters. NaN or Empty";
+
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                Execution.Code = 500;
+                Execution.Message = "Empty parameters";
+            }
+        }
+        else
+        {
+            Execution.Code = 404;
+            Execution.Message = "Parameters not found";
         }
 
         return result;
     }
 
-    private decimal ValidateDivision(List<decimal> numbers)
+    private double ValidateDivision(List<double> numbers)
     {
-        var value = 0M;
+        var value = 1D;
 
         foreach (var i in numbers)
         {
