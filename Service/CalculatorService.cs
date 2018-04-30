@@ -9,7 +9,8 @@ public class CalculatorService
     {
         Execution = new ResponseBase<double>()
         {
-            Code = 200
+            Code = 200,
+            Message = "OK"
         };
     }
 
