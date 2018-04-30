@@ -95,7 +95,6 @@ public class CalculatorService
                         break;
                     }
                 case Operations.DIV:
-                    value = 1;
                     {
                         value = ValidateDivision(numbers);
                         break;
@@ -155,18 +154,18 @@ public class CalculatorService
 
     private double ValidateDivision(List<double> numbers)
     {
-        var value = 1D;
+        var value = numbers[0];
 
-        foreach (var i in numbers)
+        for (var i = 1; i < numbers.Count; ++i)
         {
-            try
+            if (numbers[i] != 0)
             {
-                value = value / i;
+                value = value / numbers[i];
             }
-            catch (DivideByZeroException ex)
+            else
             {
                 Execution.Code = 500;
-                Execution.Message = ex.Message;
+                Execution.Message = "Infinity (IEEE 754 arithmetic reference for floating types)";
                 value = 0;
 
                 break;
